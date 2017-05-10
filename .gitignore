@@ -89,3 +89,4 @@ ENV/
 .ropeproject
 *.xlsx#
 real_practice_elements.xlsx
+session.csv
