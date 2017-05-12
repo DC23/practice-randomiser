@@ -180,9 +180,10 @@ print('Session time: {0}'.format(session_time))
 print('Planned time buffer: {0}'.format(buffer_time))
 
 display_session = session[['name', 'category', 'tempo', 'notes', 'time']]
+display_session.columns = ['Name', 'Category', 'Tempo', 'Notes', 'Duration']
 print(display_session)
 
-session.to_csv(
+display_session.to_csv(
     session_output_file,
     index=False,
     index_label=False,
