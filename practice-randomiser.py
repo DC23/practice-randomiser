@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 
-# Make these into command-line args
 parser = argparse.ArgumentParser(
         description='Generate a random practice schedule based on a pool of items in a spreadsheet.')
 
