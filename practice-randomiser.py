@@ -55,6 +55,27 @@ parser.add_argument(
     applied as hard limits on the number of per-category items for the entire
     session.''')
 
+parser.add_argument(
+    '--ignore-category-min-counts',
+    required=False,
+    default=False,
+    action='store_true',
+    help='''Ignore the per-category minimum item counts.''')
+
+parser.add_argument(
+    '--ignore-category-max-counts',
+    required=False,
+    default=False,
+    action='store_true',
+    help='''Ignore the per-category maximum item counts.''')
+
+parser.add_argument(
+    '--ignore-essential-flag',
+    required=False,
+    default=False,
+    action='store_true',
+    help='''Ignore the essential flag when selecting items.''')
+
 args = parser.parse_args()
 input_file = args.input_file
 session_output_file = args.output_csv_file
@@ -90,6 +111,7 @@ data = pd.read_excel(
         'notes': str,
     })
 
+# Fill missing values with defaults
 data.weight = data.weight.fillna(1)
 data.min_time = data.min_time.fillna(2)
 data.max_time = data.max_time.fillna(5)
@@ -97,35 +119,44 @@ data.sort_order = data.sort_order.fillna(2)
 data.tempo = data.tempo.fillna('')
 data.notes = data.notes.fillna('')
 
+# if required, scale the category max item counts by the block time
 if category_item_limits_time_block_minutes:
     category_item_limit_scale = max(1, round(practice_time_minutes / category_item_limits_time_block_minutes))
     categories.min_items *= category_item_limit_scale
     categories.max_items *= category_item_limit_scale
 
-# ## Generate the random item times
-
+# Generate the random item times
 def generate_random_times(df):
     return pd.DataFrame(
         {'time': df.apply(lambda row: random.randrange(row.min_time, row.max_time+1), axis=1)},
         index=df.index)
 
 data = data.join(generate_random_times(data))
+
+# clear the essential flag if requested
+if args.ignore_essential_flag:
+    data.essential = False
+
+# Seed the session with essential items
 session = data.query('essential == True')
+
+# select the set of candidate items
 items = data.query('essential == False and weight > 0')
 
 # initial sampling to meet the minimum item count per category constraint
-for category, group in items.groupby('category'):
-    # For this category, attempt to select the min number of items
-    try:
-        min_items = categories.loc[category].min_items
-        current = len(session[session.category == category])
-        required = min(min_items - current, len(group))
-        if not np.isnan(required) and required > 0:
-            new_items = group.sample(n=required, weights='weight')
-            items = items.drop(new_items.index)
-            session = session.append(new_items)
-    except:
-        pass
+if not args.ignore_category_min_counts:
+    for category, group in items.groupby('category'):
+        # For this category, attempt to select the min number of items
+        try:
+            min_items = categories.loc[category].min_items
+            current = len(session[session.category == category])
+            required = min(min_items - current, len(group))
+            if not np.isnan(required) and required > 0:
+                new_items = group.sample(n=required, weights='weight')
+                items = items.drop(new_items.index)
+                session = session.append(new_items)
+        except:
+            pass
 
 # Fill the rest of the session
 while session.time.sum() < practice_time_minutes and len(items) > 0:
@@ -133,7 +164,9 @@ while session.time.sum() < practice_time_minutes and len(items) > 0:
     for category, group in items.groupby('category'):
         current_items_in_category = len(session[session.category == category])
         max_category = categories.loc[category].max_items
-        if not np.isnan(max_category) and current_items_in_category >= max_category:
+        if (not args.ignore_category_max_counts
+            and not np.isnan(max_category)
+            and current_items_in_category >= max_category):
             print('Category "{0}" reached maximum item count ({1})'.format(
                 category, max_category))
             items = items[items.category != category]
