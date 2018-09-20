@@ -90,7 +90,7 @@ practice_time_minutes = total_time_minutes - buffer_time
 # Data load
 categories = pd.read_excel(
     input_file,
-    sheetname='categories',
+    sheet_name='categories',
     index_col=0,
     converters=
     {
@@ -100,7 +100,7 @@ categories = pd.read_excel(
 
 data = pd.read_excel(
     input_file,
-    sheetname='items',
+    sheet_name='items',
     converters=
     {
         'min_time': int,
