@@ -85,3 +85,4 @@ ENV/
 real_practice_elements.xlsx
 session.csv
 test_session.csv
+.vs/
