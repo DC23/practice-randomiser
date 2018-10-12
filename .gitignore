@@ -87,3 +87,4 @@ session.csv
 test_session.csv
 .vs/
 .vscode/
+Pipfile.lock
