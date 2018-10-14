@@ -9,7 +9,9 @@ xlrd = "*"
 numpy = "*"
 
 [dev-packages]
+black = "*"
 pylama = "*"
+notebook = "*"
 
 [requires]
 python_version = "3.6"
