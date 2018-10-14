@@ -85,6 +85,14 @@ parser.add_argument(
     help="""Ignore the essential flag when selecting items.""",
 )
 
+parser.add_argument(
+    "--one-category-per-sheet",
+    required=False,
+    default=False,
+    action="store_true",
+    help="""Use the new-style one category per worksheet.""",
+)
+
 args = parser.parse_args()
 input_file = args.input_file
 session_output_file = args.output_csv_file
@@ -97,17 +105,14 @@ buffer_time = math.ceil(total_time_minutes / 30 * buffer_time_per_30_minutes)
 practice_time_minutes = total_time_minutes - buffer_time
 
 # Data load
-categories = pd.read_excel(
+data = pd.DataFrame()
+categories = None
+all_sheets = pd.read_excel(
     input_file,
-    sheet_name="categories",
-    index_col=0,
-    converters={"min_items": int, "max_items": int},
-)
-
-data = pd.read_excel(
-    input_file,
-    sheet_name="items",
+    sheet_name=None,
     converters={
+        "min_items": int,
+        "max_items": int,
         "min_time": int,
         "max_time": int,
         "priority": float,
@@ -116,6 +121,18 @@ data = pd.read_excel(
         "notes": str,
     },
 )
+
+for name, sheet in all_sheets.items():
+    if name == "__metadata__":
+        categories = sheet.set_index("name")
+    else:
+        # One-category-per-sheet format does not have a category column,
+        # so we create one from the sheet name.
+        if args.one_category_per_sheet:
+            sheet["category"] = name
+        data = data.append(sheet)
+
+data.reset_index(inplace=True, drop=True)
 
 # Fill missing values with defaults
 data.weight = data.weight.fillna(1)

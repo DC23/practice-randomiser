@@ -1,4 +1,5 @@
 # practice-randomiser
+
 Randomised music practice session generator.
 
 Although I am writing this to generate guitar practice sessions, it could be
@@ -16,6 +17,10 @@ to include in the randomised session.
 
 The items sheet determines the individual practice items that can be considered
 for inclusion in a practice session.
+
+You can also omit the **category** column, and instead have a separate sheet
+for each category. In this case, you must pass the `--one-category-per-sheet`
+argument.
 
 * **name**: Item name used in the session output.
 * **category**: Category of the item.
@@ -37,9 +42,9 @@ for inclusion in a practice session.
   excluded from consideration. Think of the weight as the number of lottery
   tickets each item has in the draw.
 
-#### categories sheet
+#### __metadata__ sheet
 
-* **name**: Category name. Should match the categories used in the `items` sheet.
+* **name**: Category name. Should match the categories used in the `items` sheet (or in the category sheet names).
 * **min_items**: Minimum items to use from the category.
 * **max_items**: Maximum number of items to include from the category.
 
@@ -48,7 +53,7 @@ for inclusion in a practice session.
 There are a number of command-line arguments that allow you to modify the
 application of item and category constraints specified in the input file.
 
-```
+```bash
 usage: practice-randomiser.py [-h] -f FILE [-o FILE] [-d DURATION]
                               [-b PADDING]
                               [--category-limit-block-duration CATEGORY_LIMIT_BLOCK_DURATION]
@@ -85,6 +90,9 @@ optional arguments:
                         Ignore the per-category maximum item counts.
   --ignore-essential-flag
                         Ignore the essential flag when selecting items.
+  --one-category-per-sheet
+                        Use the new-style one category per worksheet.
+
 ```
 
 ## Example Run
@@ -95,7 +103,7 @@ python practice-randomiser.py -f practice_elements.xlsx -d 30 -b 5
 
 produces
 
-```
+```bash
 Category "repertoire" reached maximum item count (1)
 setting time to remaining
 Planned total time: 30
@@ -112,4 +120,3 @@ Planned time buffer: 5
 7              t3      technique                                                             2
 10             r1     repertoire                                                             5
 ```
-
