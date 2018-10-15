@@ -36,6 +36,14 @@ parser.add_argument(
     help='Session duration in integer minutes.')
 
 parser.add_argument(
+    '-s',
+    '--time-scale',
+    required=False,
+    default=1.0,
+    type=float,
+    help='Scales the min and max item times.')
+
+parser.add_argument(
     '-b',
     '--padding',
     required=False,
@@ -119,6 +127,10 @@ data.sort_order = data.sort_order.fillna(2)
 data.tempo = data.tempo.fillna('')
 data.notes = data.notes.fillna('')
 
+# Apply time scaling
+data.min_time *= args.time_scale
+data.max_time *= args.time_scale
+
 # if required, scale the category max item counts by the block time
 if category_item_limits_time_block_minutes:
     category_item_limit_scale = max(1, round(practice_time_minutes / category_item_limits_time_block_minutes))
@@ -128,7 +140,7 @@ if category_item_limits_time_block_minutes:
 # Generate the random item times
 def generate_random_times(df):
     return pd.DataFrame(
-        {'time': df.apply(lambda row: random.randrange(row.min_time, row.max_time+1), axis=1)},
+        {'time': df.apply(lambda row: max(1, random.randrange(int(row.min_time), int(row.max_time)+1)), axis=1)},
         index=df.index)
 
 data = data.join(generate_random_times(data))
