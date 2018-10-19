@@ -152,12 +152,12 @@ data.notes = data.notes.fillna("")
 
 # Apply time scaling
 def scale_time(row):
-    if categories.loc[row.category].scale_time:
+    if "scale_time" not in categories or categories.loc[row.category].scale_time:
         row.min_time *= args.time_scale
         row.max_time *= args.time_scale
     return row
 
-data = data.apply(lambda row: app(row), axis=1)
+data = data.apply(lambda row: scale_time(row), axis=1)
 
 # if required, scale the category max item counts by the block time
 if category_item_limits_time_block_minutes:
