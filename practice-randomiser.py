@@ -40,16 +40,17 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-s',
-    '--time-scale',
+    "-s",
+    "--time-scale",
     required=False,
     default=1.0,
     type=float,
-    help='Scales the min and max item times.')
+    help="Scales the min and max item times.",
+)
 
 parser.add_argument(
-    '-b',
-    '--padding',
+    "-b",
+    "--padding",
     required=False,
     default=0,
     type=int,
@@ -157,6 +158,7 @@ def scale_time(row):
         row.max_time *= args.time_scale
     return row
 
+
 data = data.apply(lambda row: scale_time(row), axis=1)
 
 # if required, scale the category max item counts by the block time
@@ -173,7 +175,10 @@ def generate_random_times(df):
     return pd.DataFrame(
         {
             "time": df.apply(
-                lambda row: max(1, random.randrange(int(row.min_time), int(row.max_time)+1)), axis=1
+                lambda row: max(
+                    1, random.randrange(int(row.min_time), int(row.max_time) + 1)
+                ),
+                axis=1,
             )
         },
         index=df.index,
